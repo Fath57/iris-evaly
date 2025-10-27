@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Student;
 
 class ClassModel extends Model
 {
@@ -44,7 +45,7 @@ class ClassModel extends Model
      */
     public function students()
     {
-        return $this->belongsToMany(User::class, 'class_student', 'class_id', 'student_id')
+        return $this->belongsToMany(Student::class, 'class_student', 'class_id', 'student_id')
                     ->withPivot('enrolled_at')
                     ->withTimestamps();
     }

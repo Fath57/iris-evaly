@@ -164,6 +164,36 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             ->name('subjects.template.download');
     });
 
+    // Students management
+    Route::middleware('permission:view students')->group(function () {
+        Route::get('/students', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('students.index');
+        Route::get('/students/create', [App\Http\Controllers\Admin\StudentController::class, 'create'])
+            ->middleware('permission:create students')
+            ->name('students.create');
+        Route::post('/students', [App\Http\Controllers\Admin\StudentController::class, 'store'])
+            ->middleware('permission:create students')
+            ->name('students.store');
+        Route::get('/students/{id}/edit', [App\Http\Controllers\Admin\StudentController::class, 'edit'])
+            ->middleware('permission:edit students')
+            ->name('students.edit');
+        Route::put('/students/{id}', [App\Http\Controllers\Admin\StudentController::class, 'update'])
+            ->middleware('permission:edit students')
+            ->name('students.update');
+        Route::delete('/students/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])
+            ->middleware('permission:delete students')
+            ->name('students.destroy');
+        Route::post('/students/import/{classId}', [App\Http\Controllers\Admin\StudentController::class, 'import'])
+            ->middleware('permission:create students')
+            ->name('students.import');
+        Route::get('/students/template/download', [App\Http\Controllers\Admin\StudentController::class, 'downloadTemplate'])
+            ->name('students.template.download');
+        Route::post('/students/{id}/assign-class/{classId}', [App\Http\Controllers\Admin\StudentController::class, 'assignToClass'])
+            ->middleware('permission:edit students')
+            ->name('students.assign-class');
+        Route::get('/classes/{classId}/students', [App\Http\Controllers\Admin\StudentController::class, 'getByClass'])
+            ->name('students.by-class');
+    });
+
     // Exams management
     Route::prefix('exams')->name('exams.')->group(function () {
         Route::get('/', [ExamController::class, 'index'])->name('index');
@@ -184,6 +214,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::prefix('/{examId}/questions')->name('questions.')->group(function () {
             Route::get('/', [QuestionController::class, 'byExam'])->name('index');
             Route::post('/', [QuestionController::class, 'store'])->name('store');
+            Route::post('/bulk', [QuestionController::class, 'storeBulk'])->name('store-bulk');
             Route::post('/reorder', [QuestionController::class, 'reorder'])->name('reorder');
             Route::post('/generate-ai', [App\Http\Controllers\AIQuestionController::class, 'generateQuestions'])->name('generate-ai');
         });

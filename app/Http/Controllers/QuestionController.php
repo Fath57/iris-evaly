@@ -131,6 +131,59 @@ class QuestionController extends Controller
     }
 
     /**
+     * Create multiple questions at once.
+     */
+    public function storeBulk(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'exam_id' => 'required|exists:exams,id',
+                'questions' => 'required|array|min:1',
+                'questions.*.type' => 'required|in:multiple_choice,multiple_answers,true_false,short_answer,essay',
+                'questions.*.question_text' => 'required|string',
+                'questions.*.points' => 'required|integer|min:1',
+                'questions.*.order' => 'nullable|integer',
+                'questions.*.explanation' => 'nullable|string',
+                'questions.*.correct_answer' => 'nullable|string',
+                'questions.*.options' => 'nullable|array',
+                'questions.*.options.*.option_text' => 'required|string',
+                'questions.*.options.*.is_correct' => 'required|boolean',
+            ]);
+
+            $createdQuestions = [];
+
+            foreach ($validated['questions'] as $questionData) {
+                $questionData['exam_id'] = $validated['exam_id'];
+                $question = $this->questionService->createQuestion($questionData);
+                $createdQuestions[] = $question;
+            }
+
+            // Si requête Inertia, rediriger
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()->with('success', count($createdQuestions) . ' questions créées avec succès');
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => count($createdQuestions) . ' questions created successfully',
+                'data' => $createdQuestions,
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error creating questions in bulk: ' . $e->getMessage());
+
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()->with('error', 'Erreur lors de la création des questions');
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating questions',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Update a question.
      */
     public function update(Request $request, $id)

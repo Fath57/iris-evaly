@@ -82,6 +82,7 @@ class RolePermissionSeeder extends Seeder
                 'icon' => 'cog',
                 'order' => 9,
             ],
+
         ];
 
         $moduleIds = [];
@@ -97,26 +98,26 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'create users', 'description' => 'Créer de nouveaux utilisateurs', 'module' => 'users'],
             ['name' => 'edit users', 'description' => 'Modifier les utilisateurs existants', 'module' => 'users'],
             ['name' => 'delete users', 'description' => 'Supprimer des utilisateurs', 'module' => 'users'],
-            
+
             // Role management
             ['name' => 'view roles', 'description' => 'Voir la liste des rôles', 'module' => 'roles'],
             ['name' => 'create roles', 'description' => 'Créer de nouveaux rôles', 'module' => 'roles'],
             ['name' => 'edit roles', 'description' => 'Modifier les rôles existants', 'module' => 'roles'],
             ['name' => 'delete roles', 'description' => 'Supprimer des rôles', 'module' => 'roles'],
-            
+
             // Class management
             ['name' => 'view classes', 'description' => 'Voir la liste des classes', 'module' => 'classes'],
             ['name' => 'create classes', 'description' => 'Créer de nouvelles classes', 'module' => 'classes'],
             ['name' => 'edit classes', 'description' => 'Modifier les classes existantes', 'module' => 'classes'],
             ['name' => 'delete classes', 'description' => 'Supprimer des classes', 'module' => 'classes'],
             ['name' => 'manage class students', 'description' => 'Gérer les inscriptions des étudiants', 'module' => 'classes'],
-            
+
             // Subject management
             ['name' => 'view subjects', 'description' => 'Voir la liste des matières', 'module' => 'subjects'],
             ['name' => 'create subjects', 'description' => 'Créer de nouvelles matières', 'module' => 'subjects'],
             ['name' => 'edit subjects', 'description' => 'Modifier les matières existantes', 'module' => 'subjects'],
             ['name' => 'delete subjects', 'description' => 'Supprimer des matières', 'module' => 'subjects'],
-            
+
             // Exam management
             ['name' => 'view exams', 'description' => 'Voir la liste des examens', 'module' => 'exams'],
             ['name' => 'create exams', 'description' => 'Créer de nouveaux examens', 'module' => 'exams'],
@@ -124,22 +125,34 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'delete exams', 'description' => 'Supprimer des examens', 'module' => 'exams'],
             ['name' => 'publish exams', 'description' => 'Publier des examens', 'module' => 'exams'],
             ['name' => 'grade exams', 'description' => 'Noter les examens', 'module' => 'exams'],
-            
+
             // Question management
             ['name' => 'view questions', 'description' => 'Voir la liste des questions', 'module' => 'questions'],
             ['name' => 'create questions', 'description' => 'Créer de nouvelles questions', 'module' => 'questions'],
             ['name' => 'edit questions', 'description' => 'Modifier les questions existantes', 'module' => 'questions'],
             ['name' => 'delete questions', 'description' => 'Supprimer des questions', 'module' => 'questions'],
-            
+
             // Student permissions
             ['name' => 'take exams', 'description' => 'Passer des examens', 'module' => 'student'],
             ['name' => 'view own results', 'description' => 'Consulter ses propres résultats', 'module' => 'student'],
             ['name' => 'view class materials', 'description' => 'Consulter le matériel de cours', 'module' => 'student'],
-            
+            ['name' => 'manage profile', 'description' => 'Gérer son profil personnel', 'module' => 'student'],
+            ['name' => 'change password', 'description' => 'Modifier son mot de passe', 'module' => 'student'],
+            ['name' => 'view schedule', 'description' => 'Consulter son emploi du temps', 'module' => 'student'],
+            ['name' => 'submit assignments', 'description' => 'Soumettre des devoirs', 'module' => 'student'],
+
+            // Student management
+            ['name' => 'view students', 'description' => 'Voir la liste des étudiants', 'module' => 'student'],
+            ['name' => 'create students', 'description' => 'Créer de nouveaux étudiants', 'module' => 'student'],
+            ['name' => 'edit students', 'description' => 'Modifier les étudiants existants', 'module' => 'student'],
+            ['name' => 'delete students', 'description' => 'Supprimer des étudiants', 'module' => 'student'],
+            ['name' => 'import students', 'description' => 'Importer des étudiants', 'module' => 'student'],
+            ['name' => 'assign students to class', 'description' => 'Assigner des étudiants à une classe', 'module' => 'student'],
+
             // Dashboard
             ['name' => 'view dashboard', 'description' => 'Accéder au tableau de bord', 'module' => 'dashboard'],
             ['name' => 'view analytics', 'description' => 'Voir les statistiques et analyses', 'module' => 'dashboard'],
-            
+
             // Settings
             ['name' => 'view settings', 'description' => 'Voir les paramètres système', 'module' => 'settings'],
             ['name' => 'edit settings', 'description' => 'Modifier les paramètres système', 'module' => 'settings'],
@@ -154,7 +167,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Create roles with descriptions and assign permissions
-        
+
         // Super Admin - All permissions
         $superAdminRole = Role::updateOrCreate([
             'name' => 'super-admin',
@@ -173,6 +186,7 @@ class RolePermissionSeeder extends Seeder
             'manage class students', 'view subjects', 'create subjects', 'edit subjects', 'delete subjects',
             'view exams', 'create exams', 'edit exams', 'delete exams', 'publish exams', 'grade exams',
             'view questions', 'create questions', 'edit questions', 'delete questions',
+            'view students', 'create students', 'edit students', 'delete students', 'import students', 'assign students to class',
             'view dashboard', 'view analytics',
         ]);
 
@@ -185,6 +199,7 @@ class RolePermissionSeeder extends Seeder
             'view classes', 'edit classes', 'manage class students',
             'view subjects', 'view exams', 'create exams', 'edit exams', 'publish exams', 'grade exams',
             'view questions', 'create questions', 'edit questions', 'delete questions',
+            'view students', 'edit students', 'import students', 'assign students to class',
             'view dashboard', 'view analytics',
         ]);
 
@@ -196,9 +211,10 @@ class RolePermissionSeeder extends Seeder
         $studentRole->syncPermissions([
             'view classes', 'view subjects', 'view exams',
             'take exams', 'view own results', 'view class materials',
-            'view dashboard',
+            'view dashboard', 'manage profile', 'change password',
+            'view schedule', 'submit assignments',
         ]);
-        
+
         // Assistant Teacher - Help with grading and question management
         $assistantRole = Role::updateOrCreate([
             'name' => 'assistant',

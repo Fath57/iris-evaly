@@ -82,6 +82,124 @@ class ExamService
     }
 
     /**
+     * Get exams for a student categorized by status
+     *
+     * @param int $studentId
+     * @return array
+     */
+    public function getStudentExams(int $studentId): array
+    {
+        try {
+            $student = \App\Models\Student::with('classes')->findOrFail($studentId);
+            $classIds = $student->classes->pluck('id')->toArray();
+
+            if (empty($classIds)) {
+                return [
+                    'upcoming' => [],
+                    'ongoing' => [],
+                    'past' => []
+                ];
+            }
+
+            $now = now();
+
+            // Examens à venir (publiés, date de début future)
+            $upcoming = \App\Models\Exam::whereIn('class_id', $classIds)
+                ->where('status', 'published')
+                ->where('start_date', '>', $now)
+                ->with(['subject', 'class', 'questions'])
+                ->orderBy('start_date', 'asc')
+                ->get()
+                ->map(function ($exam) use ($studentId) {
+                    return $this->formatExamForStudent($exam, $studentId);
+                });
+
+            // Examens en cours (publiés, entre start_date et end_date)
+            $ongoing = \App\Models\Exam::whereIn('class_id', $classIds)
+                ->where('status', 'published')
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                ->with(['subject', 'class', 'questions'])
+                ->orderBy('start_date', 'asc')
+                ->get()
+                ->map(function ($exam) use ($studentId) {
+                    return $this->formatExamForStudent($exam, $studentId);
+                });
+
+            // Examens passés (publiés, date de fin dépassée)
+            $past = \App\Models\Exam::whereIn('class_id', $classIds)
+                ->where('status', 'published')
+                ->where('end_date', '<', $now)
+                ->with(['subject', 'class', 'questions'])
+                ->orderBy('end_date', 'desc')
+                ->get()
+                ->map(function ($exam) use ($studentId) {
+                    return $this->formatExamForStudent($exam, $studentId);
+                });
+
+            return [
+                'upcoming' => $upcoming,
+                'ongoing' => $ongoing,
+                'past' => $past
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error getting student exams: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Format exam data for student with attempt information
+     *
+     * @param \App\Models\Exam $exam
+     * @param int $studentId
+     * @return array
+     */
+    private function formatExamForStudent($exam, int $studentId): array
+    {
+        $attempts = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+            ->where('student_id', $studentId)
+            ->get();
+
+        $attemptCount = $attempts->count();
+        $maxAttempts = $exam->max_attempts ?? 0;
+        $canAttempt = $maxAttempts === 0 || $attemptCount < $maxAttempts;
+
+        $bestScore = $attempts->max('score');
+        $lastAttempt = $attempts->sortByDesc('created_at')->first();
+
+        return [
+            'id' => $exam->id,
+            'title' => $exam->title,
+            'description' => $exam->description,
+            'subject' => [
+                'id' => $exam->subject->id,
+                'name' => $exam->subject->name,
+            ],
+            'class' => [
+                'id' => $exam->class->id,
+                'name' => $exam->class->name,
+            ],
+            'duration' => $exam->duration,
+            'total_points' => $exam->total_points,
+            'passing_score' => $exam->passing_score,
+            'start_date' => $exam->start_date->toISOString(),
+            'end_date' => $exam->end_date->toISOString(),
+            'questions_count' => $exam->questions->count(),
+            'max_attempts' => $maxAttempts,
+            'attempt_count' => $attemptCount,
+            'can_attempt' => $canAttempt,
+            'best_score' => $bestScore,
+            'last_attempt' => $lastAttempt ? [
+                'id' => $lastAttempt->id,
+                'score' => $lastAttempt->score,
+                'completed_at' => $lastAttempt->completed_at?->toISOString(),
+                'status' => $lastAttempt->status,
+            ] : null,
+        ];
+    }
+
+    /**
      * Publish an exam.
      */
     public function publishExam(int $examId)

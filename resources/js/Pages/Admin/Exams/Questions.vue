@@ -245,33 +245,34 @@ async function createAllAIQuestions() {
   showBulkCreateOption.value = false;
 
   try {
-    for (const question of aiGeneratedQuestions.value) {
-      const questionData = {
-        exam_id: props.examId,
-        question_text: question.question_text,
-        type: question.type,
-        points: question.points,
-        explanation: question.explanation,
-        correct_answer: question.correct_answer,
-        options: question.options,
-      };
+    // Préparer toutes les questions pour l'envoi en masse
+    const questionsData = aiGeneratedQuestions.value.map(question => ({
+      question_text: question.question_text,
+      type: question.type,
+      points: question.points,
+      explanation: question.explanation,
+      correct_answer: question.correct_answer,
+      options: question.options,
+    }));
 
-      await router.post(`/admin/exams/${props.examId}/questions`, questionData, {
-        preserveState: true,
-        preserveScroll: true,
-        onError: (errors) => {
-          console.error('Erreur lors de la création de la question:', errors);
-        }
-      });
-    }
+    // Envoyer toutes les questions en une seule requête
+    await router.post(`/admin/exams/${props.examId}/questions/bulk`, {
+      exam_id: props.examId,
+      questions: questionsData,
+    }, {
+      preserveState: false,
+      preserveScroll: false,
+      onSuccess: () => {
+        // Nettoyer les données IA
+        aiGeneratedQuestions.value = [];
+        currentAIQuestionIndex.value = 0;
+        selectedQuestion.value = null;
+      },
+      onError: (errors) => {
+        console.error('Erreur lors de la création des questions:', errors);
+      }
+    });
 
-    // Nettoyer les données IA
-    aiGeneratedQuestions.value = [];
-    currentAIQuestionIndex.value = 0;
-    selectedQuestion.value = null;
-
-    // Recharger la liste des questions
-    router.reload({ only: ['questions'] });
   } catch (error) {
     console.error('Erreur lors de la création des questions IA:', error);
   } finally {

@@ -22,7 +22,7 @@
                     </svg>
                     Dashboard
                 </Link>
-                
+
                 <Link
                     v-if="can('view users')"
                     :href="route('admin.users.index')"
@@ -34,7 +34,19 @@
                     </svg>
                     Utilisateurs
                 </Link>
-                
+                <Link
+                    v-if="can('view students')"
+                    :href="route('admin.students.index')"
+                    :class="route().current('admin.students.*') ? 'bg-primary/10 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+                    class="group flex items-center px-3 py-2 text-sm font-medium border-l-4 transition-colors"
+                >
+                    <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    Étudiants
+                </Link>
+
+
                 <Link
                     v-if="can('view roles')"
                     :href="route('admin.roles.index')"
@@ -46,7 +58,7 @@
                     </svg>
                     Rôles
                 </Link>
-                
+
                 <Link
                     v-if="can('view classes')"
                     :href="route('admin.classes.index')"
@@ -58,7 +70,7 @@
                     </svg>
                     Classes
                 </Link>
-                
+
                 <Link
                     v-if="can('view subjects')"
                     :href="route('admin.subjects.index')"
@@ -70,7 +82,7 @@
                     </svg>
                     Matières
                 </Link>
-                
+
                 <Link
                     :href="route('admin.exams.index')"
                     :class="route().current('admin.exams.*') ? 'bg-primary/10 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
@@ -131,7 +143,7 @@
             <div v-if="$page.props.flash.success" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3">
                 {{ $page.props.flash.success }}
             </div>
-            
+
             <div v-if="$page.props.flash.error" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3">
                 {{ $page.props.flash.error }}
             </div>
@@ -157,7 +169,7 @@ const can = (permission) => {
 
 const toggleMenuLayout = () => {
     const newLayout = page.props.auth.user.menu_layout === 'horizontal' ? 'vertical' : 'horizontal';
-    
+
     router.patch(route('profile.update-preferences'), {
         menu_layout: newLayout
     }, {

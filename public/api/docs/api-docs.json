@@ -1,0 +1,1104 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Evaly API - Système de Gestion des Étudiants",
+        "description": "API REST pour la gestion des étudiants, authentification et profils dans le système Evaly",
+        "contact": {
+            "email": "support@evaly.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3002",
+            "description": "Serveur API Evaly"
+        }
+    ],
+    "paths": {
+        "/api/students/login": {
+            "post": {
+                "tags": [
+                    "Student Authentication"
+                ],
+                "summary": "Connexion étudiant",
+                "description": "Authentifie un étudiant avec email et mot de passe",
+                "operationId": "6e74d488f971bf9de4ac446920f650df",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "etudiant@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "motdepasse123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "student": {
+                                                    "type": "object"
+                                                },
+                                                "token": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Connexion réussie."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Erreur d'authentification",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "requires_password_setup": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreurs de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/students/setup-password": {
+            "post": {
+                "tags": [
+                    "Student Authentication"
+                ],
+                "summary": "Définir le mot de passe initial",
+                "description": "Permet à un étudiant de définir son mot de passe pour la première fois en utilisant son email",
+                "operationId": "61508a790469ae11fb611743dfd228c8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jean.dupont@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 8,
+                                        "example": "motdepasse123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "motdepasse123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe défini avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "student": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "first_name": {
+                                                            "type": "string",
+                                                            "example": "Jean"
+                                                        },
+                                                        "last_name": {
+                                                            "type": "string",
+                                                            "example": "Dupont"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "jean.dupont@example.com"
+                                                        },
+                                                        "student_number": {
+                                                            "type": "string",
+                                                            "example": "STU202500001"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "1|abcd...xyz"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mot de passe défini avec succès. Vous êtes maintenant connecté."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreurs de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/students/change-password": {
+            "post": {
+                "tags": [
+                    "Student Authentication"
+                ],
+                "summary": "Changer le mot de passe",
+                "description": "Permet à un étudiant connecté de changer son mot de passe",
+                "operationId": "ef91f136f0b44c7bc8ceb45171d6cf71",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "example": "ancienmdp123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 8,
+                                        "example": "nouveaumdp123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "nouveaumdp123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe modifié avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/students/profile": {
+            "get": {
+                "tags": [
+                    "Student Authentication"
+                ],
+                "summary": "Récupérer le profil de l'étudiant connecté",
+                "description": "Récupère les informations du profil de l'étudiant authentifié",
+                "operationId": "a8e3a942c36dd3570018f98c1035db6f",
+                "responses": {
+                    "200": {
+                        "description": "Profil récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Student Authentication"
+                ],
+                "summary": "Mettre à jour le profil",
+                "description": "Met à jour les informations du profil de l'étudiant connecté",
+                "operationId": "d3edeef00bbd2bea1469ce818d9240d2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "Jean"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Dupont"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+33123456789"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "123 Rue de la Paix, Paris"
+                                    },
+                                    "date_of_birth": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2000-01-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/students/exams": {
+            "get": {
+                "tags": [
+                    "Student Authentication"
+                ],
+                "summary": "Récupérer les examens de l'étudiant",
+                "description": "Récupère les examens de l'étudiant connecté, catégorisés par statut (à venir, en cours, passés)",
+                "operationId": "ca614e9bd785d4ded10ba546e487eb65",
+                "responses": {
+                    "200": {
+                        "description": "Liste des examens récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "upcoming": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "title": {
+                                                                "type": "string",
+                                                                "example": "Examen de Mathématiques"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "Examen sur les équations"
+                                                            },
+                                                            "subject": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 1
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Mathématiques"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "class": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 1
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Terminale S1"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "duration": {
+                                                                "type": "integer",
+                                                                "example": 60
+                                                            },
+                                                            "total_points": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 20
+                                                            },
+                                                            "passing_score": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 10
+                                                            },
+                                                            "start_date": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-11-01T10:00:00Z"
+                                                            },
+                                                            "end_date": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-11-01T12:00:00Z"
+                                                            },
+                                                            "questions_count": {
+                                                                "type": "integer",
+                                                                "example": 20
+                                                            },
+                                                            "max_attempts": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "attempt_count": {
+                                                                "type": "integer",
+                                                                "example": 0
+                                                            },
+                                                            "can_attempt": {
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            },
+                                                            "best_score": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": null
+                                                            },
+                                                            "last_attempt": {
+                                                                "type": "object",
+                                                                "nullable": true
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "ongoing": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "past": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Examens récupérés avec succès."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/students/logout": {
+            "post": {
+                "tags": [
+                    "Student Authentication"
+                ],
+                "summary": "Déconnexion étudiant",
+                "description": "Déconnecte l'étudiant et révoque son token",
+                "operationId": "b5af20f3e3f7291b346334771472a48d",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Déconnexion réussie."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/students": {
+            "get": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Récupérer la liste des étudiants",
+                "description": "Récupère la liste paginée des étudiants avec filtres optionnels",
+                "operationId": "5a54d6df45ca455ad022d2f7b9da9731",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Nombre d'éléments par page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Terme de recherche (nom, prénom, email, numéro étudiant)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "class_id",
+                        "in": "query",
+                        "description": "ID de la classe pour filtrer",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Statut actif (true/false)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des étudiants récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Créer un nouvel étudiant",
+                "description": "Crée un nouvel étudiant avec les données fournies",
+                "operationId": "aa0044bcc7e0cbaa736f0c20a4a6765c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "Jean"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Dupont"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jean.dupont@example.com"
+                                    },
+                                    "student_number": {
+                                        "type": "string",
+                                        "example": "STU202400001"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+33123456789"
+                                    },
+                                    "date_of_birth": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2000-01-01"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "123 Rue de la Paix, Paris"
+                                    },
+                                    "parent_contact": {
+                                        "type": "string",
+                                        "example": "parent@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 8,
+                                        "example": "motdepasse123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Étudiant créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreurs de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/students/{id}": {
+            "get": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Récupérer un étudiant par ID",
+                "description": "Récupère les détails d'un étudiant spécifique",
+                "operationId": "5e2013c1980b929b399fa6e9296534b7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de l'étudiant",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails de l'étudiant récupérés avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Étudiant non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Mettre à jour un étudiant",
+                "description": "Met à jour les informations d'un étudiant existant",
+                "operationId": "35f77190e85ebd1a750bc9a367dfe651",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de l'étudiant",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "Jean"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Dupont"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jean.dupont@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+33123456789"
+                                    },
+                                    "date_of_birth": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2000-01-01"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "123 Rue de la Paix, Paris"
+                                    },
+                                    "parent_contact": {
+                                        "type": "string",
+                                        "example": "parent@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Étudiant mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/students/import/{classId}": {
+            "post": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Importer des étudiants depuis un fichier Excel",
+                "description": "Importe une liste d'étudiants depuis un fichier Excel et les assigne à une classe",
+                "operationId": "1f810408942cbd1fc77e3ec057301874",
+                "parameters": [
+                    {
+                        "name": "classId",
+                        "in": "path",
+                        "description": "ID de la classe",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "file": {
+                                        "description": "Fichier Excel contenant les données des étudiants",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Import réalisé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/students/{id}/assign-class/{classId}": {
+            "post": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Assigner un étudiant à une classe",
+                "description": "Assigne un étudiant existant à une classe",
+                "operationId": "6cec3fbcb963f493006f45f144c222a7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de l'étudiant",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "classId",
+                        "in": "path",
+                        "description": "ID de la classe",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Étudiant assigné à la classe avec succès"
+                    }
+                }
+            }
+        },
+        "/api/classes/{classId}/students": {
+            "get": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Récupérer les étudiants d'une classe",
+                "description": "Récupère tous les étudiants assignés à une classe spécifique",
+                "operationId": "60f3bef6a90d62057cc01c92063d2e2a",
+                "parameters": [
+                    {
+                        "name": "classId",
+                        "in": "path",
+                        "description": "ID de la classe",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des étudiants de la classe récupérée avec succès"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Utilisez le token Bearer obtenu lors de la connexion",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Student Authentication",
+            "description": "API Endpoints pour l'authentification des étudiants"
+        },
+        {
+            "name": "Students",
+            "description": "API Endpoints pour la gestion des étudiants"
+        }
+    ]
+}

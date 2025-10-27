@@ -22,7 +22,7 @@
                             >
                                 Dashboard
                             </Link>
-                            
+
                             <Link
                                 v-if="can('view users')"
                                 :href="route('admin.users.index')"
@@ -31,7 +31,15 @@
                             >
                                 Utilisateurs
                             </Link>
-                            
+                            <Link
+                                v-if="can('view students')"
+                                :href="route('admin.students.index')"
+                                :class="route().current('admin.students.*') ? 'border-primary text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
+                                class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+                            >
+                                Étudiants
+                            </Link>
+
                             <Link
                                 v-if="can('view roles')"
                                 :href="route('admin.roles.index')"
@@ -40,7 +48,7 @@
                             >
                                 Rôles
                             </Link>
-                            
+
                             <Link
                                 v-if="can('view classes')"
                                 :href="route('admin.classes.index')"
@@ -49,7 +57,7 @@
                             >
                                 Classes
                             </Link>
-                            
+
                             <Link
                                 v-if="can('view subjects')"
                                 :href="route('admin.subjects.index')"
@@ -58,13 +66,22 @@
                             >
                                 Matières
                             </Link>
-                            
+
                             <Link
                                 :href="route('admin.exams.index')"
                                 :class="route().current('admin.exams.*') ? 'border-primary text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
                                 class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
                             >
                                 Examens
+                            </Link>
+
+                            <Link
+                                v-if="can('view students')"
+                                :href="route('admin.students.index')"
+                                :class="route().current('admin.students.*') ? 'border-primary text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
+                                class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+                            >
+                                Étudiants
                             </Link>
                         </div>
                     </div>
@@ -123,7 +140,7 @@
                     {{ $page.props.flash.success }}
                 </div>
             </div>
-            
+
             <div v-if="$page.props.flash.error" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
                 <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
                     {{ $page.props.flash.error }}
@@ -148,7 +165,7 @@ const can = (permission) => {
 
 const toggleMenuLayout = () => {
     const newLayout = page.props.auth.user.menu_layout === 'horizontal' ? 'vertical' : 'horizontal';
-    
+
     router.patch(route('profile.update-preferences'), {
         menu_layout: newLayout
     }, {
