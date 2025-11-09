@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\StudentAuthController;
+use App\Http\Controllers\Api\StudentExamAttemptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,8 @@ Route::middleware('auth:sanctum')->prefix('students')->group(function () {
     Route::get('profile', [StudentAuthController::class, 'getProfile']);
     Route::put('profile', [StudentAuthController::class, 'updateProfile']);
     Route::get('exams', [StudentAuthController::class, 'getExams']);
+    Route::post('exams/{exam}/submit', [StudentExamAttemptController::class, 'submit']);
+    Route::get('exams/{exam}/results', [StudentExamAttemptController::class, 'results']);
     Route::post('change-password', [StudentAuthController::class, 'changePassword']);
     Route::post('logout', [StudentAuthController::class, 'logout']);
 });

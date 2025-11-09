@@ -9,10 +9,12 @@ Toutes les APIs demandées ont été **implémentées avec succès** et sont **t
 | 1 | **Définir Mot de Passe Initial** | `/api/students/setup-password` | POST | ❌ Public | ✅ Prêt |
 | 2 | **Récupérer Profil** | `/api/students/profile` | GET | ✅ Bearer | ✅ Prêt |
 | 3 | **Récupérer Examens** | `/api/students/exams` | GET | ✅ Bearer | ✅ **Nouveau** |
-| 4 | **Modifier Mot de Passe** | `/api/students/change-password` | POST | ✅ Bearer | ✅ Prêt |
-| 5 | **Connexion** | `/api/students/login` | POST | ❌ Public | ✅ Prêt |
-| 6 | **Mettre à Jour Profil** | `/api/students/profile` | PUT | ✅ Bearer | ✅ Prêt |
-| 7 | **Déconnexion** | `/api/students/logout` | POST | ✅ Bearer | ✅ Prêt |
+| 4 | **Soumettre un Examen** | `/api/students/exams/{exam}/submit` | POST | ✅ Bearer | ✅ **Nouveau** |
+| 5 | **Consulter Résultats d'Examen** | `/api/students/exams/{exam}/results` | GET | ✅ Bearer | ✅ **Nouveau** |
+| 6 | **Modifier Mot de Passe** | `/api/students/change-password` | POST | ✅ Bearer | ✅ Prêt |
+| 7 | **Connexion** | `/api/students/login` | POST | ❌ Public | ✅ Prêt |
+| 8 | **Mettre à Jour Profil** | `/api/students/profile` | PUT | ✅ Bearer | ✅ Prêt |
+| 9 | **Déconnexion** | `/api/students/logout` | POST | ✅ Bearer | ✅ Prêt |
 
 ---
 
@@ -47,7 +49,22 @@ Toutes les APIs demandées ont été **implémentées avec succès** et sont **t
   - **Dernière tentative** avec détails
 - ✅ **Nouvellement créé**
 
-### 4. **Modifier le Mot de Passe** 🔐
+### 4. **Soumettre un Examen** 📝 **NOUVEAU**
+- Endpoint: `POST /api/students/exams/{exam}/submit`
+- Valide que l'étudiant appartient à la classe et que l'examen est disponible
+- Enregistre/écrase les réponses question par question (option, texte libre, temps passé)
+- Finalise automatiquement la tentative (score, pourcentage, statut)
+- Retourne un récapitulatif détaillé (points obtenus, temps total, réponses corrigées)
+- ✅ **Nouvellement créé**
+
+### 5. **Consulter les Résultats d'Examen** 📊 **NOUVEAU**
+- Endpoint: `GET /api/students/exams/{exam}/results`
+- Récupère la dernière tentative complétée de l'étudiant
+- Fournit le détail question par question (réponse donnée, correction, points)
+- Inclut le résumé (score total, pourcentage, réussite, temps passé)
+- ✅ **Nouvellement créé**
+
+### 6. **Modifier le Mot de Passe** 🔐
 - Endpoint: `POST /api/students/change-password`
 - Nécessite authentification Bearer
 - Valide le mot de passe actuel avant modification
@@ -73,11 +90,11 @@ Voir le fichier: `API_DOCUMENTATION.md`
 `tests/Feature/StudentApiTest.php`
 
 ### **Couverture des Tests**
-- ✅ **15 tests** couvrant toutes les APIs
+- ✅ **18 tests** couvrant toutes les APIs
 - ✅ Tests d'authentification (login, setup password, logout)
 - ✅ Tests de profil (get, update)
 - ✅ Tests de gestion du mot de passe (change password)
-- ✅ Tests des examens (récupération par catégorie)
+- ✅ Tests des examens (récupération, soumission, résultats)
 - ✅ Tests des cas d'erreur (401, 422)
 
 ### **Exécuter les Tests**
@@ -87,6 +104,9 @@ php artisan test --filter StudentApiTest
 
 # Test spécifique
 php artisan test --filter "student can get their exams"
+
+# Test de soumission complète
+php artisan test --filter "student can submit an exam and retrieve results"
 ```
 
 ---
@@ -170,7 +190,34 @@ curl -X GET http://localhost/api/students/exams \
 }
 ```
 
-### **5. Modifier le Mot de Passe**
+### **5. Soumettre un Examen** 🆕
+```bash
+curl -X POST http://localhost/api/students/exams/{exam_id}/submit \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "time_spent_seconds": 320,
+    "answers": [
+      {
+        "question_id": 12,
+        "option_id": 45,
+        "time_spent_seconds": 120
+      },
+      {
+        "question_id": 13,
+        "answer_text": "Réponse libre"
+      }
+    ]
+  }'
+```
+
+### **6. Consulter les Résultats d'un Examen** 🆕
+```bash
+curl -X GET http://localhost/api/students/exams/{exam_id}/results \
+  -H "Authorization: Bearer {token}"
+```
+
+### **7. Modifier le Mot de Passe**
 ```bash
 curl -X POST http://localhost/api/students/change-password \
   -H "Authorization: Bearer {token}" \
@@ -182,7 +229,7 @@ curl -X POST http://localhost/api/students/change-password \
   }'
 ```
 
-### **6. Déconnexion**
+### **8. Déconnexion**
 ```bash
 curl -X POST http://localhost/api/students/logout \
   -H "Authorization: Bearer {token}"
@@ -201,14 +248,18 @@ curl -X POST http://localhost/api/students/logout \
 ### **Architecture**
 ```
 ├── Controllers
-│   └── Api/StudentAuthController.php    (7 endpoints)
+│   ├── Api/StudentAuthController.php        (7 endpoints)
+│   └── Api/StudentExamAttemptController.php (2 endpoints)
 ├── Services
-│   ├── StudentAuthService.php           (Auth & Profile)
-│   └── ExamService.php                  (Examens avec getStudentExams)
+│   ├── StudentAuthService.php               (Auth & Profil)
+│   ├── ExamService.php                      (Catalogue d'examens)
+│   └── ExamAttemptService.php               (Soumission & résultats)
 ├── Repositories
-│   └── StudentRepository.php
+│   ├── StudentRepository.php
+│   ├── ExamRepository.php
+│   └── ExamAttemptRepository.php
 └── Tests
-    └── Feature/StudentApiTest.php       (15 tests)
+    └── Feature/StudentApiTest.php           (18 tests)
 ```
 
 ### **Sécurité**
@@ -285,17 +336,68 @@ curl -X POST http://localhost/api/students/logout \
 }
 ```
 
+## 📊 Exemple de Réponse: Résultats d'un Examen
+
+```json
+{
+  "success": true,
+  "data": {
+    "attempt_id": 8,
+    "score": 18.5,
+    "percentage": 92.5,
+    "passed": true,
+    "summary": {
+      "total_questions": 10,
+      "answered_questions": 10,
+      "correct_answers": 9,
+      "total_score": 18.5,
+      "percentage": 92.5,
+      "passed": true,
+      "time_spent": 320
+    },
+    "answers": [
+      {
+        "question": {
+          "id": 12,
+          "question_text": "Résoudre 2x + 3 = 11"
+        },
+        "selected_option": {
+          "id": 45,
+          "option_text": "x = 4"
+        },
+        "is_correct": true,
+        "points_awarded": 5,
+        "correct_answers": [
+          {
+            "option_id": 45,
+            "is_correct": true
+          }
+        ]
+      }
+      // ... autres questions
+    ],
+    "exam": {
+      "id": 5,
+      "title": "Examen de Mathématiques",
+      "total_points": 20,
+      "passing_score": 50
+    }
+  },
+  "message": "Résultats récupérés avec succès."
+}
+```
+
 ---
 
 ## ✨ Points Forts
 
 1. **✅ Complet** - Toutes les APIs demandées sont implémentées
 2. **✅ Documenté** - Documentation Swagger + Markdown détaillée
-3. **✅ Testé** - 15 tests automatisés avec Pest PHP
+3. **✅ Testé** - 18 tests automatisés avec Pest PHP (API + examens)
 4. **✅ Sécurisé** - Authentification, validation, hashage
 5. **✅ Structuré** - Architecture Service/Repository
-6. **✅ Intelligent** - Catégorisation automatique des examens par statut
-7. **✅ Pratique** - Retourne des informations utiles (can_attempt, best_score, etc.)
+6. **✅ Intelligent** - Catégorisation automatique et correction instantanée des examens
+7. **✅ Pratique** - Soumission + résultats détaillés (scores, réponses corrigées)
 
 ---
 
@@ -306,9 +408,11 @@ curl -X POST http://localhost/api/students/logout \
 | ✅ API Définir Mot de Passe | **Prêt** |
 | ✅ API Récupérer Profil | **Prêt** |
 | ✅ API Récupérer Examens | **Prêt** |
+| ✅ API Soumettre Examen | **Prêt** |
+| ✅ API Résultats Examen | **Prêt** |
 | ✅ API Modifier Mot de Passe | **Prêt** |
 | ✅ Documentation Swagger | **Générée** |
-| ✅ Tests Automatisés | **Créés** |
+| ✅ Tests Automatisés (18) | **Créés** |
 | ✅ Guide d'Utilisation | **Fourni** |
 
 ---

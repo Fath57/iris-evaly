@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('exam_attempts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('exam_id')->constrained('exams')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->dateTime('started_at');
             $table->dateTime('completed_at')->nullable();
-            $table->json('answers');
             $table->decimal('score', 5, 2)->nullable();
             $table->decimal('percentage', 5, 2)->nullable();
             $table->enum('status', ['in_progress', 'completed', 'abandoned'])->default('in_progress');

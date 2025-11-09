@@ -379,9 +379,162 @@ Authorization: Bearer {token}
 
 ---
 
+### 7. **Soumettre un Examen** 📝✅
+
+**Endpoint:** `POST /api/students/exams/{exam}/submit`
+
+**Description:** Soumet les réponses de l'étudiant pour un examen publié et calcule automatiquement le score.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Corps de la requête:**
+```json
+{
+  "time_spent_seconds": 320,
+  "answers": [
+    {
+      "question_id": 12,
+      "option_id": 45,
+      "time_spent_seconds": 120
+    },
+    {
+      "question_id": 13,
+      "answer_text": "La capitale est Paris.",
+      "time_spent_seconds": 200
+    }
+  ]
+}
+```
+
+**Réponse Succès (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "attempt_id": 8,
+    "score": 18.5,
+    "percentage": 92.5,
+    "passed": true,
+    "summary": {
+      "total_questions": 10,
+      "answered_questions": 10,
+      "correct_answers": 9,
+      "total_score": 18.5,
+      "percentage": 92.5,
+      "passed": true,
+      "time_spent": 320
+    },
+    "answers": [
+      {
+        "question": {
+          "id": 12,
+          "question_text": "Résoudre 2x + 3 = 11",
+          "points": 5,
+          "...": "..."
+        },
+        "selected_option": {
+          "id": 45,
+          "option_text": "x = 4"
+        },
+        "answer_text": null,
+        "is_correct": true,
+        "points_awarded": 5,
+        "correct_answers": [
+          {
+            "option_id": 45,
+            "is_correct": true
+          }
+        ]
+      }
+      // ... autres réponses
+    ]
+  },
+  "message": "Examen soumis avec succès."
+}
+```
+
+**Réponses d'Erreur possibles:**
+- `403 Forbidden` : l'étudiant n'est pas inscrit à la classe de l'examen ou l'examen n'est pas disponible.
+- `422 Unprocessable Entity` : données invalides (question hors examen, option invalide, etc.).
+
+---
+
+### 8. **Consulter les Résultats d'un Examen** 📊
+
+**Endpoint:** `GET /api/students/exams/{exam}/results`
+
+**Description:** Retourne la dernière tentative complétée de l'étudiant pour un examen, incluant le détail question par question.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Réponse Succès (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "attempt_id": 8,
+    "score": 18.5,
+    "percentage": 92.5,
+    "passed": true,
+    "summary": {
+      "total_questions": 10,
+      "answered_questions": 10,
+      "correct_answers": 9,
+      "total_score": 18.5,
+      "percentage": 92.5,
+      "passed": true,
+      "time_spent": 320
+    },
+    "answers": [
+      {
+        "question": {
+          "id": 12,
+          "question_text": "Résoudre 2x + 3 = 11"
+        },
+        "selected_option": {
+          "id": 45,
+          "option_text": "x = 4"
+        },
+        "answer_text": null,
+        "is_correct": true,
+        "points_awarded": 5,
+        "correct_answers": [
+          {
+            "option_id": 45,
+            "is_correct": true
+          }
+        ]
+      }
+      // ... autres réponses
+    ],
+    "exam": {
+      "id": 5,
+      "title": "Examen de Mathématiques",
+      "description": "Chapitre: équations",
+      "total_points": 20,
+      "passing_score": 50
+    }
+  },
+  "message": "Résultats récupérés avec succès."
+}
+```
+
+**Réponses d'Erreur possibles:**
+- `404 Not Found` : aucune tentative complétée n'est disponible pour cet examen.
+- `403 Forbidden` : l'étudiant n'a pas accès à cet examen.
+
+---
+
 ## 🚪 Déconnexion
 
-### 7. **Déconnexion** 👋
+### 9. **Déconnexion** 👋
 
 **Endpoint:** `POST /api/students/logout`
 

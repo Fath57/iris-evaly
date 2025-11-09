@@ -1079,6 +1079,198 @@
                     }
                 }
             }
+        },
+        "/api/students/exams/{exam}/submit": {
+            "post": {
+                "tags": [
+                    "Student Exams"
+                ],
+                "summary": "Soumettre un examen",
+                "description": "Permet à un étudiant de soumettre ses réponses pour un examen donné",
+                "operationId": "a451214f29279b60a1d84a7d54f3efde",
+                "parameters": [
+                    {
+                        "name": "exam",
+                        "in": "path",
+                        "description": "ID de l'examen",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "answers"
+                                ],
+                                "properties": {
+                                    "answers": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "question_id"
+                                            ],
+                                            "properties": {
+                                                "question_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "option_id": {
+                                                    "type": "integer",
+                                                    "example": 10,
+                                                    "nullable": true
+                                                },
+                                                "answer_text": {
+                                                    "type": "string",
+                                                    "example": "Réponse libre",
+                                                    "nullable": true
+                                                },
+                                                "time_spent_seconds": {
+                                                    "type": "integer",
+                                                    "example": 45
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "time_spent_seconds": {
+                                        "type": "integer",
+                                        "example": 350,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Examen soumis avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "attempt_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "score": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 18.5
+                                                },
+                                                "percentage": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 92.5
+                                                },
+                                                "passed": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "summary": {
+                                                    "type": "object"
+                                                },
+                                                "answers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Examen soumis avec succès."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "Erreurs de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/students/exams/{exam}/results": {
+            "get": {
+                "tags": [
+                    "Student Exams"
+                ],
+                "summary": "Récupérer les résultats d'un examen",
+                "description": "Récupère le détail de la dernière tentative complétée par l'étudiant pour un examen donné",
+                "operationId": "a8dcb289ebf520ba1d0fc87e32fbc022",
+                "parameters": [
+                    {
+                        "name": "exam",
+                        "in": "path",
+                        "description": "ID de l'examen",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Résultats récupérés avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Résultats récupérés avec succès."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Aucun résultat trouvé"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -1099,6 +1291,10 @@
         {
             "name": "Students",
             "description": "API Endpoints pour la gestion des étudiants"
+        },
+        {
+            "name": "Student Exams",
+            "description": "API Endpoints pour la soumission et les résultats des examens étudiants"
         }
     ]
 }

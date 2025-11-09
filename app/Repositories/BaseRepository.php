@@ -44,6 +44,14 @@ abstract class BaseRepository implements RepositoryInterface
         return $this->model->find($id);
     }
 
+    /**
+     * Alias for find to maintain backward compatibility with existing services.
+     */
+    public function findById(int $id): ?Model
+    {
+        return $this->find($id);
+    }
+
     public function create(array $data): Model
     {
         return $this->model->create($data);
