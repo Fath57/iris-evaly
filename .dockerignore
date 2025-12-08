@@ -1,0 +1,59 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Dependencies (will be installed in container)
+/node_modules
+/vendor
+
+# Build artifacts
+/public/hot
+/public/build
+/public/storage
+
+# Storage (except structure)
+/storage/*.key
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Environment
+.env
+.env.backup
+.env.local
+.env.*.local
+
+# Testing
+/coverage
+.phpunit.result.cache
+phpunit.xml
+
+# Misc
+*.log
+*.cache
+.DS_Store
+Thumbs.db
+npm-debug.log
+yarn-error.log
+
+# Documentation
+/docs
+README.md
+CHANGELOG.md
+FEATURES.md
+
+# Composer local
+composer.phar
