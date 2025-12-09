@@ -170,6 +170,7 @@ class ExamService
 
         return [
             'id' => $exam->id,
+            'show_results_immediately' => $exam->show_results_immediately,
             'title' => $exam->title,
             'description' => $exam->description,
             'subject' => [
@@ -320,10 +321,10 @@ class ExamService
             // Create new exam with modified data
             $examData = $originalExam->toArray();
             unset($examData['id'], $examData['created_at'], $examData['updated_at']);
-            
+
             $examData['title'] = $newData['title'] ?? $examData['title'] . ' (Copy)';
             $examData['status'] = 'draft';
-            
+
             $newExam = $this->examRepository->create($examData);
 
             // Duplicate all questions
@@ -355,7 +356,7 @@ class ExamService
     {
         try {
             $exam = $this->examRepository->getExamWithAttempts($examId);
-            
+
             $statistics = [
                 'exam' => $exam,
                 'total_questions' => $exam->questions()->count(),
