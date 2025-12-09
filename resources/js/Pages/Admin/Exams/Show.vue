@@ -21,16 +21,43 @@
                     >
                         Publier
                     </button>
+                    <button
+                        v-if="canReleaseResults"
+                        @click="releaseResults"
+                        :disabled="isReleasingResults"
+                        class="px-4 py-2 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 disabled:opacity-50"
+                    >
+                        <span v-if="isReleasingResults">Publication...</span>
+                        <span v-else>Publier les résultats</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Status Badge -->
-            <div class="mb-6">
+            <!-- Status Badges -->
+            <div class="mb-6 flex flex-wrap gap-2">
                 <span
                     :class="statusClass"
                     class="px-3 py-1 text-xs font-semibold rounded-full"
                 >
                     {{ statusText }}
+                </span>
+                <span
+                    v-if="exam.results_released_at"
+                    class="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800"
+                >
+                    Résultats publiés le {{ formatDate(exam.results_released_at) }}
+                </span>
+                <span
+                    v-else-if="exam.show_results_immediately"
+                    class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"
+                >
+                    Résultats immédiats
+                </span>
+                <span
+                    v-else-if="exam.status !== 'draft'"
+                    class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800"
+                >
+                    Résultats en attente de publication
                 </span>
             </div>
 
@@ -134,6 +161,7 @@
 
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import axios from 'axios';
 
 export default {
     name: 'ShowExam',
@@ -146,7 +174,17 @@ export default {
             required: true,
         },
     },
+    data() {
+        return {
+            isReleasingResults: false,
+        };
+    },
     computed: {
+        canReleaseResults() {
+            return this.exam.status !== 'draft'
+                && !this.exam.show_results_immediately
+                && !this.exam.results_released_at;
+        },
         statusClass() {
             const classes = {
                 draft: 'bg-gray-200 text-gray-700',
@@ -188,6 +226,24 @@ export default {
         publishExam() {
             if (confirm('Êtes-vous sûr de vouloir publier cet examen ?')) {
                 this.$inertia.post(`/admin/exams/${this.exam.id}/publish`);
+            }
+        },
+        async releaseResults() {
+            if (!confirm('Êtes-vous sûr de vouloir publier les résultats ? Les étudiants seront notifiés.')) {
+                return;
+            }
+
+            this.isReleasingResults = true;
+            try {
+                const response = await axios.post(`/admin/exams/${this.exam.id}/release-results`);
+                if (response.data.success) {
+                    alert(`Résultats publiés ! ${response.data.data.students_notified} étudiant(s) notifié(s).`);
+                    this.$inertia.reload();
+                }
+            } catch (error) {
+                alert(error.response?.data?.message || 'Erreur lors de la publication des résultats.');
+            } finally {
+                this.isReleasingResults = false;
             }
         },
     },
