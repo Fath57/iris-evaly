@@ -203,10 +203,13 @@ class ExamService
 
         $bestScore = $attempts->max('score');
         $lastAttempt = $attempts->sortByDesc('created_at')->first();
+        $hasCompletedAttempt = $attempts->where('status', 'completed')->count() > 0;
 
         return [
             'id' => $exam->id,
             'show_results_immediately' => $exam->show_results_immediately,
+            'results_available' => $hasCompletedAttempt && $exam->areResultsAvailable(),
+            'results_released_at' => $exam->results_released_at?->toISOString(),
             'title' => $exam->title,
             'description' => $exam->description,
             'subject' => [

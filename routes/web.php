@@ -206,6 +206,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/{id}/publish', [ExamController::class, 'publish'])->name('publish');
         Route::post('/{id}/archive', [ExamController::class, 'archive'])->name('archive');
         Route::post('/{id}/duplicate', [ExamController::class, 'duplicate'])->name('duplicate');
+        Route::post('/{id}/release-results', [ExamController::class, 'releaseResults'])->name('release-results');
         Route::get('/{id}/statistics', [ExamController::class, 'statistics'])->name('statistics');
         Route::get('/class/{classId}', [ExamController::class, 'byClass'])->name('by-class');
         Route::get('/subject/{subjectId}', [ExamController::class, 'bySubject'])->name('by-subject');

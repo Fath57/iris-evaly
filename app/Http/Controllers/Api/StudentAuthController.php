@@ -355,4 +355,118 @@ class StudentAuthController extends Controller
 
         return response()->json($result);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/students/notifications",
+     *     summary="Récupérer les notifications de l'étudiant",
+     *     description="Récupère les notifications de l'étudiant connecté",
+     *     tags={"Student Authentication"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Liste des notifications récupérée avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="unread_count", type="integer", example=3),
+     *                 @OA\Property(property="notifications", type="array", @OA\Items(type="object",
+     *                     @OA\Property(property="id", type="string"),
+     *                     @OA\Property(property="type", type="string"),
+     *                     @OA\Property(property="data", type="object"),
+     *                     @OA\Property(property="read_at", type="string", nullable=true),
+     *                     @OA\Property(property="created_at", type="string")
+     *                 ))
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function getNotifications(Request $request): JsonResponse
+    {
+        $student = $request->user();
+
+        $notifications = $student->notifications()
+            ->orderBy('created_at', 'desc')
+            ->take(50)
+            ->get()
+            ->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'type' => class_basename($notification->type),
+                    'data' => $notification->data,
+                    'read_at' => $notification->read_at?->toISOString(),
+                    'created_at' => $notification->created_at->toISOString(),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'unread_count' => $student->unreadNotifications()->count(),
+                'notifications' => $notifications,
+            ],
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/students/notifications/{id}/read",
+     *     summary="Marquer une notification comme lue",
+     *     tags={"Student Authentication"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Notification marquée comme lue"
+     *     )
+     * )
+     */
+    public function markNotificationRead(Request $request, $id): JsonResponse
+    {
+        $student = $request->user();
+        $notification = $student->notifications()->find($id);
+
+        if (!$notification) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notification non trouvée.',
+            ], 404);
+        }
+
+        $notification->markAsRead();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notification marquée comme lue.',
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/students/notifications/read-all",
+     *     summary="Marquer toutes les notifications comme lues",
+     *     tags={"Student Authentication"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Toutes les notifications marquées comme lues"
+     *     )
+     * )
+     */
+    public function markAllNotificationsRead(Request $request): JsonResponse
+    {
+        $student = $request->user();
+        $student->unreadNotifications->markAsRead();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Toutes les notifications ont été marquées comme lues.',
+        ]);
+    }
 }

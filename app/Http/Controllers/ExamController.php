@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Services\ExamService;
+use App\Models\Exam;
+use App\Models\Student;
+use App\Notifications\ExamResultsReleasedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use App\Models\Subject;
 use App\Models\ClassModel;
@@ -348,6 +352,56 @@ class ExamController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching exams',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Release exam results and notify students.
+     */
+    public function releaseResults($id)
+    {
+        try {
+            $exam = Exam::with(['class', 'subject'])->findOrFail($id);
+
+            // Check if results are already released
+            if ($exam->results_released_at) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Les résultats ont déjà été publiés.',
+                ], 400);
+            }
+
+            // Release results
+            $exam->releaseResults(Auth::id());
+
+            // Get all students who have completed the exam
+            $studentIds = $exam->attempts()
+                ->where('status', 'completed')
+                ->pluck('student_id')
+                ->unique();
+
+            $students = Student::whereIn('id', $studentIds)->get();
+
+            // Send notifications to all students who completed the exam
+            if ($students->count() > 0) {
+                Notification::send($students, new ExamResultsReleasedNotification($exam));
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Les résultats ont été publiés et les étudiants notifiés.',
+                'data' => [
+                    'results_released_at' => $exam->fresh()->results_released_at,
+                    'students_notified' => $students->count(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error releasing exam results: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la publication des résultats.',
                 'error' => $e->getMessage(),
             ], 500);
         }

@@ -35,6 +35,8 @@ class Exam extends Model
         'max_attempts',
         'success_message',
         'failure_message',
+        'results_released_at',
+        'results_released_by',
     ];
 
     protected $casts = [
@@ -52,6 +54,7 @@ class Exam extends Model
         'passing_score' => 'integer',
         'max_attempts' => 'integer',
         'questions_per_page' => 'integer',
+        'results_released_at' => 'datetime',
     ];
 
     /**
@@ -76,6 +79,14 @@ class Exam extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the user who released the results.
+     */
+    public function resultsReleasedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'results_released_by');
     }
 
     /**
@@ -141,5 +152,27 @@ class Exam extends Model
             ->count();
 
         return $this->isAvailable() && $attemptCount < $this->max_attempts;
+    }
+
+    /**
+     * Check if results are available for students.
+     * Results are available if:
+     * - show_results_immediately is true, OR
+     * - results have been manually released by the teacher
+     */
+    public function areResultsAvailable(): bool
+    {
+        return $this->show_results_immediately || $this->results_released_at !== null;
+    }
+
+    /**
+     * Release the results for this exam.
+     */
+    public function releaseResults(int $userId): void
+    {
+        $this->update([
+            'results_released_at' => now(),
+            'results_released_by' => $userId,
+        ]);
     }
 }

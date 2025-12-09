@@ -38,6 +38,11 @@ Route::middleware('auth:sanctum')->prefix('students')->group(function () {
     Route::get('exams/{exam}/results', [StudentExamAttemptController::class, 'results']);
     Route::post('change-password', [StudentAuthController::class, 'changePassword']);
     Route::post('logout', [StudentAuthController::class, 'logout']);
+
+    // Notifications
+    Route::get('notifications', [StudentAuthController::class, 'getNotifications']);
+    Route::post('notifications/{id}/read', [StudentAuthController::class, 'markNotificationRead']);
+    Route::post('notifications/read-all', [StudentAuthController::class, 'markAllNotificationsRead']);
 });
 
 // Routes pour l'authentification des étudiants (maintenues dans l'API)
