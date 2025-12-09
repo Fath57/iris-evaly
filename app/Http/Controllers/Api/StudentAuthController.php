@@ -285,7 +285,18 @@ class StudentAuthController extends Controller
      *                     @OA\Property(property="last_attempt", type="object", nullable=true)
      *                 )),
      *                 @OA\Property(property="ongoing", type="array", @OA\Items(type="object")),
-     *                 @OA\Property(property="past", type="array", @OA\Items(type="object"))
+     *                 @OA\Property(property="past", type="array", @OA\Items(type="object")),
+     *                 @OA\Property(property="completed", type="array", description="Examens complétés par l'étudiant", @OA\Items(type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="title", type="string"),
+     *                     @OA\Property(property="best_attempt", type="object",
+     *                         @OA\Property(property="id", type="integer"),
+     *                         @OA\Property(property="score", type="number"),
+     *                         @OA\Property(property="percentage", type="number"),
+     *                         @OA\Property(property="passed", type="boolean"),
+     *                         @OA\Property(property="completed_at", type="string", format="date-time")
+     *                     )
+     *                 ))
      *             ),
      *             @OA\Property(property="message", type="string", example="Examens récupérés avec succès.")
      *         )
