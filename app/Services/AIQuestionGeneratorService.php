@@ -406,21 +406,29 @@ class AIQuestionGeneratorService
      */
     protected function getOrCreatePrompt($questionType, $difficulty, $provider)
     {
-        return AIPrompt::firstOrCreate(
-            [
-                'question_type' => $questionType,
-                'difficulty_level' => $difficulty,
-                'is_default' => true,
-            ],
-            [
-                'name' => "Génération {$questionType} - {$difficulty}",
-                'description' => "Prompt par défaut pour la génération de questions {$questionType} de niveau {$difficulty}",
-                'prompt_template' => $this->buildSystemPrompt($questionType, $difficulty, 'fr'),
-                'ai_provider' => $provider,
-                'is_active' => true,
-                'usage_count' => 0,
-            ]
-        );
+        // D'abord, chercher un prompt existant
+        $prompt = AIPrompt::where('question_type', $questionType)
+            ->where('difficulty_level', $difficulty)
+            ->where('is_default', true)
+            ->first();
+
+        if ($prompt) {
+            return $prompt;
+        }
+
+        // Créer un nouveau prompt avec created_by
+        return AIPrompt::create([
+            'question_type' => $questionType,
+            'difficulty_level' => $difficulty,
+            'is_default' => true,
+            'name' => "Génération {$questionType} - {$difficulty}",
+            'description' => "Prompt par défaut pour la génération de questions {$questionType} de niveau {$difficulty}",
+            'prompt_template' => $this->buildSystemPrompt($questionType, $difficulty, 'fr'),
+            'ai_provider' => $provider,
+            'is_active' => true,
+            'usage_count' => 0,
+            'created_by' => auth()->id(),
+        ]);
     }
 
     /**
