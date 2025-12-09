@@ -447,6 +447,77 @@ class StudentExamAttemptController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/students/history",
+     *     summary="Récupérer l'historique des examens passés",
+     *     description="Récupère la liste de tous les examens passés par l'étudiant avec leurs résultats",
+     *     tags={"Student Exams"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Historique récupéré avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array",
+     *                 @OA\Items(type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="exam", type="object",
+     *                         @OA\Property(property="id", type="integer"),
+     *                         @OA\Property(property="title", type="string"),
+     *                         @OA\Property(property="subject", type="object")
+     *                     ),
+     *                     @OA\Property(property="score", type="number", example=18.5),
+     *                     @OA\Property(property="percentage", type="number", example=92.5),
+     *                     @OA\Property(property="passed", type="boolean", example=true),
+     *                     @OA\Property(property="completed_at", type="string", format="date-time"),
+     *                     @OA\Property(property="time_spent_seconds", type="integer")
+     *                 )
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Historique récupéré avec succès.")
+     *         )
+     *     )
+     * )
+     */
+    public function history(Request $request): JsonResponse
+    {
+        /** @var Student $student */
+        $student = $request->user();
+
+        $attempts = $this->examAttemptService->getStudentHistory($student->id);
+
+        $history = $attempts
+            ->filter(fn ($attempt) => $attempt->status === 'completed')
+            ->map(function ($attempt) {
+                return [
+                    'id' => $attempt->id,
+                    'exam' => [
+                        'id' => $attempt->exam->id,
+                        'title' => $attempt->exam->title,
+                        'description' => $attempt->exam->description,
+                        'total_points' => $attempt->exam->total_points,
+                        'passing_score' => $attempt->exam->passing_score,
+                        'subject' => [
+                            'id' => $attempt->exam->subject->id,
+                            'name' => $attempt->exam->subject->name,
+                        ],
+                    ],
+                    'score' => $attempt->score,
+                    'percentage' => $attempt->percentage,
+                    'passed' => $attempt->hasPassed(),
+                    'completed_at' => $attempt->completed_at,
+                    'time_spent_seconds' => $attempt->time_spent_seconds,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => $history,
+            'message' => 'Historique récupéré avec succès.',
+        ]);
+    }
+
     private function ensureStudentCanAccessExam(Student $student, Exam $exam): void
     {
         $belongsToClass = $student->classes()

@@ -97,7 +97,8 @@ class ExamService
                 return [
                     'upcoming' => [],
                     'ongoing' => [],
-                    'past' => []
+                    'past' => [],
+                    'completed' => []
                 ];
             }
 
@@ -137,10 +138,45 @@ class ExamService
                     return $this->formatExamForStudent($exam, $studentId);
                 });
 
+            // Examens complétés par l'étudiant (avec au moins une tentative terminée)
+            $completedExamIds = \App\Models\ExamAttempt::where('student_id', $studentId)
+                ->where('status', 'completed')
+                ->pluck('exam_id')
+                ->unique();
+
+            $completed = \App\Models\Exam::whereIn('id', $completedExamIds)
+                ->with(['subject', 'class', 'questions'])
+                ->orderBy('updated_at', 'desc')
+                ->get()
+                ->map(function ($exam) use ($studentId) {
+                    $formattedExam = $this->formatExamForStudent($exam, $studentId);
+
+                    // Ajouter les infos de la meilleure tentative
+                    $bestAttempt = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                        ->where('student_id', $studentId)
+                        ->where('status', 'completed')
+                        ->orderByDesc('score')
+                        ->first();
+
+                    if ($bestAttempt) {
+                        $formattedExam['best_attempt'] = [
+                            'id' => $bestAttempt->id,
+                            'score' => $bestAttempt->score,
+                            'percentage' => $bestAttempt->percentage,
+                            'passed' => $bestAttempt->hasPassed(),
+                            'completed_at' => $bestAttempt->completed_at?->toISOString(),
+                            'time_spent_seconds' => $bestAttempt->time_spent_seconds,
+                        ];
+                    }
+
+                    return $formattedExam;
+                });
+
             return [
                 'upcoming' => $upcoming,
                 'ongoing' => $ongoing,
-                'past' => $past
+                'past' => $past,
+                'completed' => $completed
             ];
         } catch (\Exception $e) {
             Log::error('Error getting student exams: ' . $e->getMessage());

@@ -15,6 +15,12 @@ class TeacherSeeder extends Seeder
 
         $teachers = [
             [
+                'name' => 'Prof Math',
+                'email' => 'prof.math@evaly.com',
+                'password' => Hash::make('password123'),
+                'email_verified_at' => now(),
+            ],
+            [
                 'name' => 'Marie Martin',
                 'email' => 'marie.martin@evaly.com',
                 'password' => Hash::make('password123'),
