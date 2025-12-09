@@ -10,7 +10,8 @@
         >
             <div
                 v-if="show"
-                class="fixed inset-0 bg-black bg-opacity-30 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+                :class="backdropClass"
+                class="fixed inset-0 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
                 @click="closeOnBackdrop && $emit('close')"
             >
                 <Transition
@@ -89,6 +90,20 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    backdrop: {
+        type: String,
+        default: 'default', // 'default', 'light', 'blur', 'none'
+    },
+});
+
+const backdropClass = computed(() => {
+    const backdrops = {
+        default: 'bg-black/30',
+        light: 'bg-white/20 backdrop-blur-sm',
+        blur: 'bg-black/20 backdrop-blur-md',
+        none: '',
+    };
+    return backdrops[props.backdrop] || backdrops.default;
 });
 
 defineEmits(['close']);
