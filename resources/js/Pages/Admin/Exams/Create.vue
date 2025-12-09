@@ -303,33 +303,45 @@
                 </div>
 
                 <!-- Navigation Buttons -->
-                <div class="flex justify-between items-center pt-6">
-                    <button 
-                        v-if="currentStep > 0"
-                        type="button"
-                        @click="currentStep--"
-                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium"
-                    >
-                        ← Précédent
-                    </button>
-                    <div v-else></div>
+                <div class="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex justify-start">
+                        <Button
+                            v-if="currentStep > 0"
+                            type="button"
+                            variant="secondary"
+                            size="lg"
+                            class="gap-2"
+                            @click="currentStep--"
+                        >
+                            <span aria-hidden="true">←</span>
+                            <span>Précédent</span>
+                        </Button>
+                    </div>
 
-                    <button 
-                        v-if="currentStep < steps.length - 1"
-                        type="button"
-                        @click="nextStep"
-                        class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-600 transition-all font-medium"
-                    >
-                        Suivant →
-                    </button>
-                    <button 
-                        v-else
-                        type="submit"
-                        :disabled="form.processing"
-                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
-                    >
-                        {{ form.processing ? 'Création...' : '✓ Créer l\'Examen' }}
-                    </button>
+                    <div class="flex justify-end">
+                        <Button
+                            v-if="currentStep < steps.length - 1"
+                            type="button"
+                            variant="primary"
+                            size="lg"
+                            class="gap-2"
+                            @click="nextStep"
+                        >
+                            <span>Suivant</span>
+                            <span aria-hidden="true">→</span>
+                        </Button>
+                        <Button
+                            v-else
+                            type="submit"
+                            variant="success"
+                            size="lg"
+                            :disabled="form.processing"
+                            class="gap-2"
+                        >
+                            <span aria-hidden="true">✓</span>
+                            <span>{{ form.processing ? 'Création...' : 'Créer l\'Examen' }}</span>
+                        </Button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -338,6 +350,7 @@
 
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Button from '@/Components/Button.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -345,6 +358,7 @@ export default {
     name: 'CreateExam',
     components: {
         AppLayout,
+        Button,
     },
     props: {
         subjects: {

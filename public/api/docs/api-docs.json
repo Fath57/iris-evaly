@@ -10,7 +10,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:3002",
+            "url": "http://localhost:8007",
             "description": "Serveur API Evaly"
         }
     ],
@@ -1078,6 +1078,169 @@
                         "description": "Liste des étudiants de la classe récupérée avec succès"
                     }
                 }
+            }
+        },
+        "/api/students/exams/{exam}/questions": {
+            "get": {
+                "tags": [
+                    "Student Exams"
+                ],
+                "summary": "Récupérer les questions d'un examen",
+                "description": "Récupère toutes les questions d'un examen avec leurs options pour permettre à l'étudiant de passer l'examen",
+                "operationId": "816691fe8ac3833ef05b9d82a40115e3",
+                "parameters": [
+                    {
+                        "name": "exam",
+                        "in": "path",
+                        "description": "ID de l'examen",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Questions récupérées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "exam": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "example": "Examen de Mathématiques"
+                                                        },
+                                                        "description": {
+                                                            "type": "string"
+                                                        },
+                                                        "instructions": {
+                                                            "type": "string"
+                                                        },
+                                                        "duration_minutes": {
+                                                            "type": "integer",
+                                                            "example": 60
+                                                        },
+                                                        "total_points": {
+                                                            "type": "integer",
+                                                            "example": 20
+                                                        },
+                                                        "passing_score": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        },
+                                                        "shuffle_questions": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "shuffle_options": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "allow_navigation": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "questions_per_page": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "questions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "example": "multiple_choice"
+                                                            },
+                                                            "question_text": {
+                                                                "type": "string"
+                                                            },
+                                                            "points": {
+                                                                "type": "integer",
+                                                                "example": 4
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "options": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "option_text": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "option_key": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "attempt_info": {
+                                                    "properties": {
+                                                        "attempt_count": {
+                                                            "type": "integer",
+                                                            "example": 0
+                                                        },
+                                                        "max_attempts": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "can_attempt": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Questions récupérées avec succès."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé ou examen non disponible"
+                    },
+                    "404": {
+                        "description": "Examen non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/students/exams/{exam}/submit": {

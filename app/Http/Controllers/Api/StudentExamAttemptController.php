@@ -26,6 +26,199 @@ class StudentExamAttemptController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/students/exams/{exam}/questions",
+     *     summary="Récupérer les questions d'un examen",
+     *     description="Récupère toutes les questions d'un examen avec leurs options pour permettre à l'étudiant de passer l'examen",
+     *     tags={"Student Exams"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="exam",
+     *         in="path",
+     *         required=true,
+     *         description="ID de l'examen",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Questions récupérées avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="exam", type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="title", type="string", example="Examen de Mathématiques"),
+     *                     @OA\Property(property="description", type="string"),
+     *                     @OA\Property(property="instructions", type="string"),
+     *                     @OA\Property(property="duration_minutes", type="integer", example=60),
+     *                     @OA\Property(property="total_points", type="integer", example=20),
+     *                     @OA\Property(property="passing_score", type="integer", example=10),
+     *                     @OA\Property(property="shuffle_questions", type="boolean"),
+     *                     @OA\Property(property="shuffle_options", type="boolean"),
+     *                     @OA\Property(property="allow_navigation", type="boolean"),
+     *                     @OA\Property(property="questions_per_page", type="integer")
+     *                 ),
+     *                 @OA\Property(property="questions", type="array",
+     *                     @OA\Items(type="object",
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="type", type="string", example="multiple_choice"),
+     *                         @OA\Property(property="question_text", type="string"),
+     *                         @OA\Property(property="points", type="integer", example=4),
+     *                         @OA\Property(property="order", type="integer", example=1),
+     *                         @OA\Property(property="options", type="array",
+     *                             @OA\Items(type="object",
+     *                                 @OA\Property(property="id", type="integer"),
+     *                                 @OA\Property(property="option_text", type="string"),
+     *                                 @OA\Property(property="option_key", type="string")
+     *                             )
+     *                         )
+     *                     )
+     *                 ),
+     *                 @OA\Property(property="attempt_info", type="object",
+     *                     @OA\Property(property="attempt_count", type="integer", example=0),
+     *                     @OA\Property(property="max_attempts", type="integer", example=2),
+     *                     @OA\Property(property="can_attempt", type="boolean", example=true)
+     *                 )
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Questions récupérées avec succès.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès refusé ou examen non disponible"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Examen non trouvé"
+     *     )
+     * )
+     */
+    public function questions(Request $request, Exam $exam): JsonResponse
+    {
+        /** @var Student $student */
+        $student = $request->user();
+
+        $this->ensureStudentCanAccessExam($student, $exam);
+
+        if (!$exam->isAvailable()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cet examen n\'est pas disponible pour le moment.',
+            ], 403);
+        }
+
+        // Vérifier si l'étudiant peut encore tenter l'examen
+        $attemptCount = $exam->attempts()
+            ->where('student_id', $student->id)
+            ->where('status', 'completed')
+            ->count();
+
+        if ($attemptCount >= $exam->max_attempts) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous avez atteint le nombre maximum de tentatives pour cet examen.',
+            ], 403);
+        }
+
+        // Charger les questions avec leurs options et images
+        $exam->load([
+            'questions.options.images',
+            'questions.images',
+            'subject'
+        ]);
+
+        $questions = $exam->questions->sortBy('order')->map(function ($question) use ($exam) {
+            $options = $question->options->sortBy('order')->map(function ($option) {
+                $optionData = [
+                    'id' => $option->id,
+                    'option_text' => $option->option_text,
+                    'option_key' => $option->option_key,
+                ];
+
+                // Ajouter les images de l'option si présentes
+                if ($option->images->isNotEmpty()) {
+                    $optionData['images'] = $option->images->map(function ($image) {
+                        return [
+                            'id' => $image->id,
+                            'url' => $image->image_url,
+                            'alt_text' => $image->alt_text,
+                            'width' => $image->width,
+                            'height' => $image->height,
+                        ];
+                    })->values();
+                }
+
+                return $optionData;
+            });
+
+            // Mélanger les options si configuré
+            if ($exam->shuffle_options) {
+                $options = $options->shuffle();
+            }
+
+            $questionData = [
+                'id' => $question->id,
+                'type' => $question->type,
+                'question_text' => $question->question_text,
+                'points' => $question->points,
+                'order' => $question->order,
+                'options' => $options->values(),
+            ];
+
+            // Ajouter les images de la question si présentes
+            if ($question->images->isNotEmpty()) {
+                $questionData['images'] = $question->images->map(function ($image) {
+                    return [
+                        'id' => $image->id,
+                        'url' => $image->image_url,
+                        'alt_text' => $image->alt_text,
+                        'image_type' => $image->image_type,
+                        'width' => $image->width,
+                        'height' => $image->height,
+                    ];
+                })->values();
+            }
+
+            return $questionData;
+        });
+
+        // Mélanger les questions si configuré
+        if ($exam->shuffle_questions) {
+            $questions = $questions->shuffle()->values();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'exam' => [
+                    'id' => $exam->id,
+                    'title' => $exam->title,
+                    'description' => $exam->description,
+                    'instructions' => $exam->instructions,
+                    'duration_minutes' => $exam->duration_minutes,
+                    'total_points' => $exam->total_points,
+                    'passing_score' => $exam->passing_score,
+                    'shuffle_questions' => $exam->shuffle_questions,
+                    'shuffle_options' => $exam->shuffle_options,
+                    'allow_navigation' => $exam->allow_navigation,
+                    'questions_per_page' => $exam->questions_per_page,
+                    'subject' => [
+                        'id' => $exam->subject->id,
+                        'name' => $exam->subject->name,
+                    ],
+                ],
+                'questions' => $questions,
+                'attempt_info' => [
+                    'attempt_count' => $attemptCount,
+                    'max_attempts' => $exam->max_attempts,
+                    'can_attempt' => $attemptCount < $exam->max_attempts,
+                ],
+            ],
+            'message' => 'Questions récupérées avec succès.',
+        ]);
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/students/exams/{exam}/submit",
      *     summary="Soumettre un examen",
