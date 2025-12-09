@@ -11,6 +11,7 @@ class StudentSeeder extends Seeder
     public function run(): void
     {
         $students = [
+            // Étudiants avec mot de passe défini (prêts à se connecter)
             [
                 'student_number' => 'STU202500001',
                 'first_name' => 'Jean',
@@ -47,29 +48,30 @@ class StudentSeeder extends Seeder
                 'enrollment_date' => '2024-09-01',
                 'profile_completed' => true,
             ],
+            // Étudiants sans mot de passe (doivent faire le setup)
             [
                 'student_number' => 'STU202500004',
                 'first_name' => 'Chloé',
                 'last_name' => 'Petit',
                 'email' => 'chloe.petit@test.com',
-                'password' => Hash::make('password123'),
+                'password' => null,
                 'phone' => '0645678901',
                 'date_of_birth' => '2005-09-05',
                 'is_active' => true,
                 'enrollment_date' => '2024-09-01',
-                'profile_completed' => true,
+                'profile_completed' => false,
             ],
             [
                 'student_number' => 'STU202500005',
                 'first_name' => 'Hugo',
                 'last_name' => 'Roux',
                 'email' => 'hugo.roux@test.com',
-                'password' => Hash::make('password123'),
+                'password' => null,
                 'phone' => '0656789012',
                 'date_of_birth' => '2005-12-20',
                 'is_active' => true,
                 'enrollment_date' => '2024-09-01',
-                'profile_completed' => true,
+                'profile_completed' => false,
             ],
         ];
 
