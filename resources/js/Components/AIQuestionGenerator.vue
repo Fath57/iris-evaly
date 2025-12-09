@@ -72,43 +72,89 @@
             </div>
           </div>
 
-          <!-- Type, Difficulty, Number -->
-          <div class="grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1.5">Type *</label>
-              <select
-                v-model="form.question_type"
-                required
-                class="w-full px-3 py-2.5 text-sm bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none cursor-pointer"
+          <!-- Type -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1.5">Type de question *</label>
+            <select
+              v-model="form.question_type"
+              required
+              class="w-full px-3 py-2.5 text-sm bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none cursor-pointer"
+            >
+              <option value="multiple_choice">QCM (choix unique)</option>
+              <option value="multiple_answers">Choix multiples</option>
+              <option value="true_false">Vrai/Faux</option>
+              <option value="short_answer">Réponse courte</option>
+              <option value="essay">Rédaction</option>
+            </select>
+          </div>
+
+          <!-- Difficulty - Segmented Control -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-2">Difficulté *</label>
+            <div class="flex bg-gray-100 rounded-xl p-1 gap-1">
+              <button
+                v-for="diff in difficulties"
+                :key="diff.value"
+                type="button"
+                @click="form.difficulty = diff.value"
+                :class="[
+                  'flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all duration-200',
+                  form.difficulty === diff.value
+                    ? 'bg-white shadow-sm ' + diff.activeClass
+                    : 'text-gray-500 hover:text-gray-700'
+                ]"
               >
-                <option value="multiple_choice">QCM</option>
-                <option value="multiple_answers">Choix multiples</option>
-                <option value="true_false">Vrai/Faux</option>
-                <option value="short_answer">Réponse courte</option>
-                <option value="essay">Rédaction</option>
-              </select>
+                <span class="flex items-center justify-center gap-1.5">
+                  <span :class="['w-2 h-2 rounded-full', diff.dotClass]"></span>
+                  {{ diff.label }}
+                </span>
+              </button>
             </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1.5">Difficulté *</label>
-              <select
-                v-model="form.difficulty"
-                required
-                class="w-full px-3 py-2.5 text-sm bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none cursor-pointer"
+          </div>
+
+          <!-- Number - Slider with Stepper -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-medium text-gray-600">Nombre de questions *</label>
+              <span class="text-sm font-semibold text-amber-600">{{ form.number_of_questions }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                @click="decrementQuestions"
+                :disabled="form.number_of_questions <= 1"
+                class="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
               >
-                <option value="easy">Facile</option>
-                <option value="medium">Moyen</option>
-                <option value="hard">Difficile</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1.5">Nombre *</label>
-              <input
-                v-model.number="form.number_of_questions"
-                type="number"
-                min="1"
-                max="20"
-                class="w-full px-3 py-2.5 text-sm bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
-              />
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                </svg>
+              </button>
+              <div class="flex-1 relative">
+                <input
+                  v-model.number="form.number_of_questions"
+                  type="range"
+                  min="1"
+                  max="20"
+                  class="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer slider-thumb"
+                />
+                <div class="flex justify-between text-[10px] text-gray-400 mt-1 px-0.5">
+                  <span>1</span>
+                  <span>5</span>
+                  <span>10</span>
+                  <span>15</span>
+                  <span>20</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                @click="incrementQuestions"
+                :disabled="form.number_of_questions >= 20"
+                class="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+              >
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -204,6 +250,24 @@ const form = reactive({
 const isGenerating = ref(false);
 const error = ref(null);
 
+const difficulties = [
+  { value: 'easy', label: 'Facile', activeClass: 'text-emerald-600', dotClass: 'bg-emerald-500' },
+  { value: 'medium', label: 'Moyen', activeClass: 'text-amber-600', dotClass: 'bg-amber-500' },
+  { value: 'hard', label: 'Difficile', activeClass: 'text-red-600', dotClass: 'bg-red-500' },
+];
+
+function incrementQuestions() {
+  if (form.number_of_questions < 20) {
+    form.number_of_questions++;
+  }
+}
+
+function decrementQuestions() {
+  if (form.number_of_questions > 1) {
+    form.number_of_questions--;
+  }
+}
+
 async function generateQuestions() {
   isGenerating.value = true;
   error.value = null;
@@ -250,3 +314,52 @@ async function generateQuestions() {
   });
 }
 </script>
+
+<style scoped>
+/* Slider thumb styling */
+.slider-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider-thumb::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.5);
+}
+
+.slider-thumb::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider-thumb::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.5);
+}
+
+/* Track styling */
+.slider-thumb::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #fbbf24 0%, #e5e7eb 0%);
+}
+
+.slider-thumb::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #e5e7eb;
+}
+</style>
